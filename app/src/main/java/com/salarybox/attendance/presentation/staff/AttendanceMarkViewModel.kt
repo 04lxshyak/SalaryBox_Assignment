@@ -1,5 +1,6 @@
 package com.salarybox.attendance.presentation.staff
 
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -68,6 +69,36 @@ class AttendanceMarkViewModel(
 
     init {
         initializeSessionAndEnrollment()
+    }
+
+    fun initializeFaceEngine(context: Context) {
+        if (faceEngine.isInitialized()) return
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    step = AttendanceProcessStep.INITIALIZING,
+                    statusMessage = "Preparing face recognition...",
+                    isProcessing = true,
+                    errorMessage = null
+                )
+            }
+            try {
+                faceEngine.initialize(context.applicationContext)
+                _uiState.update {
+                    it.copy(
+                        step = AttendanceProcessStep.READY,
+                        statusMessage = "Position your face within the guide and tap Verify Attendance.",
+                        isProcessing = false
+                    )
+                }
+            } catch (_: Exception) {
+                failAttendance(
+                    errorState = AttendanceProcessStep.ERROR,
+                    message = "Face recognition could not be started. Attendance was not recorded."
+                )
+            }
+        }
     }
 
     private fun initializeSessionAndEnrollment() {
@@ -151,14 +182,12 @@ class AttendanceMarkViewModel(
             }
 
             try {
-                // Ensure face engine is ready
                 if (!faceEngine.isInitialized()) {
-                    _uiState.update {
-                        it.copy(
-                            step = AttendanceProcessStep.INITIALIZING,
-                            statusMessage = "Initializing face engine..."
-                        )
-                    }
+                    failAttendance(
+                        errorState = AttendanceProcessStep.ERROR,
+                        message = "Face recognition is not ready. Please retry once it is available."
+                    )
+                    return@launch
                 }
 
                 // Step 2 & 3: Face Detection and Quality Validation

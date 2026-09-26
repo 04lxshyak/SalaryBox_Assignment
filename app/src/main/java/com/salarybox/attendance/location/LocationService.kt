@@ -99,15 +99,9 @@ class LocationService(private val context: Context) {
             cancellationTokenSource.cancel()
         }
 
-        // 4. Fallback to Last Known Location if current location timed out
-        val finalLocation: Location? = location ?: try {
-            val lastTask = fusedLocationClient.lastLocation
-            Tasks.await(lastTask)
-        } catch (_: Exception) {
-            null
-        }
-
-        if (finalLocation == null) {
+        // Attendance must be tied to a fresh capture event. A last-known location may
+        // belong to an earlier place or time, so the workflow fails closed instead.
+        if (location == null) {
             return@withContext LocationResult.Error(
                 LocationErrorType.TIMEOUT,
                 "Location could not be obtained. Attendance was not recorded."
@@ -115,12 +109,12 @@ class LocationService(private val context: Context) {
         }
 
         // 5. Reverse Geocode address if possible (non-blocking best effort)
-        val addressDescription = getAddressDescription(finalLocation.latitude, finalLocation.longitude)
+        val addressDescription = getAddressDescription(location.latitude, location.longitude)
 
         return@withContext LocationResult.Success(
-            latitude = finalLocation.latitude,
-            longitude = finalLocation.longitude,
-            accuracy = finalLocation.accuracy,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            accuracy = location.accuracy,
             addressDescription = addressDescription
         )
     }

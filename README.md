@@ -171,8 +171,8 @@ cd SalaryBox_Assignment
 ```
 
 Generated APKs:
-* **Release APK**: `release/attendance-app.apk` (72.6 MB, ready to install)
-* **Debug APK**: `app/build/outputs/apk/debug/app-debug.apk`
+* **Historical APK**: `release/attendance-app.apk` (72.6 MB). Its relationship to the current source has not been verified; generate a fresh APK before submission.
+* **Debug APK output after a successful build**: `app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
@@ -232,7 +232,7 @@ SalaryBox_Assignment/
 │   └── src/test/                       // Complete automated test suite
 ├── docs/                               // Architecture, Security, Traceability, Demo docs
 ├── release/
-│   └── attendance-app.apk              // Ready-to-install release APK (72.6 MB)
+│   └── attendance-app.apk              // Historical APK; rebuild and verify before submission
 ├── README.md
 ├── build.gradle.kts
 └── settings.gradle.kts
